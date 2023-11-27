@@ -65,6 +65,8 @@ class MedicationSpider(scrapy.Spider):
         return drug_class_list
     
     def get_uses(self, response):
+        all_uses = []
+
         # Extracting "uses" based on the breadcrumb
         breadcrumb_selector = 'ol.ddc-breadcrumb-3 li.ddc-breadcrumb-item'
         breadcrumb_items = response.css(breadcrumb_selector)
@@ -73,10 +75,17 @@ class MedicationSpider(scrapy.Spider):
         if 'Treatments' in treatments_text:
             treatments_index = treatments_text.index('Treatments')
             if len(breadcrumb_items) > treatments_index + 1:
-                return breadcrumb_items[treatments_index + 1].css('::text').get().strip()
+                breadcrumb_use = breadcrumb_items[treatments_index + 1].css('::text').get().strip().lower()
+                if breadcrumb_use:
+                    all_uses.append(breadcrumb_use)
 
-        # If not found in the breadcrumb, fall back to backup method
-        return self.backup_uses(response)
+        # Always use the backup method as well
+        backup_uses = self.backup_uses(response)
+        all_uses.extend(backup_uses)
+
+        # Remove duplicates
+        return list(set(all_uses))
+
 
     def backup_uses(self, response):
         uses_list = []
