@@ -1109,8 +1109,7 @@
 {"name": "Bamlanivimab", "drug_classes": ["Miscellaneous antivirals"], "uses": ["covid-19", "coronavirus", "diabetes", "sweating", "infection"]},
 {"name": "Balziva (birth control)", "drug_classes": ["Contraceptives", "Sex hormone combinations"], "uses": ["gallbladder disease", "fibrocystic breast disease", "birth control"]},
 {"name": "Balversa", "drug_classes": ["Multikinase inhibitors"], "uses": ["urothelial carcinoma"]},
-{"name": "Balsam Peru and castor oil topical", "drug_classes": ["Miscellaneous topical agents"], "uses": ["bed sores", "skin conditions", "dermatologic lesion"]}
-][
+{"name": "Balsam Peru and castor oil topical", "drug_classes": ["Miscellaneous topical agents"], "uses": ["bed sores", "skin conditions", "dermatologic lesion"]},
 {"name": "Azulfidine", "drug_classes": ["5-aminosalicylates", "Antirheumatics"], "uses": ["lymphocytic colitis", "juvenile rheumatoid arthritis", "inflammatory bowel disease", "drowsiness", "sore throat", "porphyria"]},
 {"name": "Abstral", "drug_classes": ["Opioids (narcotic analgesics)"], "uses": ["breakthrough pain", "chronic pain"]},
 {"name": "Aczone", "drug_classes": ["Topical acne agents"], "uses": []},

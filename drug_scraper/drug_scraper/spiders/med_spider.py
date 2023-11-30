@@ -48,6 +48,11 @@ class MedicationSpider(scrapy.Spider):
         item['name'] = response.css('h1::text').get()
         item['drug_classes'] = self.get_drug_class_list(response)
         item['uses'] = self.get_uses(response)
+        item['side_effects'] = self.extract_side_effects(response)
+
+
+
+
         # Yield or return the item
         yield item
         
@@ -102,5 +107,24 @@ class MedicationSpider(scrapy.Spider):
 
         return uses_list
 
+    
+    def extract_side_effects(self, response):
+    # Locate the header with the id 'side-effects'
+        side_effects_header = response.xpath('//h2[@id="side-effects"]')
 
+        # Find all ul elements following this header until 'ddc-related-links'
+        # Use the 'following-sibling' axis and stop at the specified class
+        side_effects_lists = side_effects_header.xpath(
+            'following-sibling::ul[preceding-sibling::div[contains(@class, "ddc-related-links")]]'
+        )
+
+        # Extract the side effects from each ul
+        side_effects_data = []
+        for ul in side_effects_lists:
+            effects = ul.xpath('li//text()').getall()
+            # Clean up the effects text and add to the list
+            cleaned_effects = [effect.strip() for effect in effects if effect.strip()]
+            side_effects_data.extend(cleaned_effects)
+
+        return side_effects_data
 
