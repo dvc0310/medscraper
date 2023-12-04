@@ -8,6 +8,7 @@ import scrapy
 
 class MedicationItem(scrapy.Item):
     name = scrapy.Field()
+    generic_name = scrapy.Field()
     ratings = scrapy.Field()
     drug_classes = scrapy.Field()
     uses = scrapy.Field()

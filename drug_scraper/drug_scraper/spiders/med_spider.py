@@ -1,6 +1,7 @@
 from drug_scraper.items import MedicationItem
 import string
 import scrapy
+import re
 
 class MedicationSpider(scrapy.Spider):
     name = 'medication_spider'
@@ -30,7 +31,7 @@ class MedicationSpider(scrapy.Spider):
     
     def parse(self, response):
         # Selector for the list of drugs within the 'ul' with the class 'ddc-list-column-2'
-        drug_links_selector = 'ul.ddc-list-column-2 li a:not([href*="/pro/"]):not([href*="/monograph/"])::attr(href)'
+        drug_links_selector = 'ul.ddc-list-column-2 li a:not([href*="/pi/"]):not([href*="/pro/"]):not([href*="/monograph/"]):not([href*="/cons/"])::attr(href)'
 
         # Extract the links
         drug_links = response.css(drug_links_selector).getall()
@@ -48,9 +49,7 @@ class MedicationSpider(scrapy.Spider):
         item['name'] = response.css('h1::text').get()
         item['drug_classes'] = self.get_drug_class_list(response)
         item['uses'] = self.get_uses(response)
-        item['side_effects'] = self.extract_side_effects(response)
-
-
+        item["status"] = response.css('.ddc-status-info-item b:contains("Availability") + span::text').get().strip()
 
 
         # Yield or return the item
@@ -70,61 +69,27 @@ class MedicationSpider(scrapy.Spider):
         return drug_class_list
     
     def get_uses(self, response):
-        all_uses = []
+        # Select the header with the id 'uses'
+        uses_header = response.xpath('//*[@id="uses"]')
 
-        # Extracting "uses" based on the breadcrumb
-        breadcrumb_selector = 'ol.ddc-breadcrumb-3 li.ddc-breadcrumb-item'
-        breadcrumb_items = response.css(breadcrumb_selector)
-        treatments_text = breadcrumb_items.css('::text').getall()
+        # Select all following siblings that are paragraphs until the next header
+        paragraphs = uses_header.xpath('following-sibling::p[count(preceding-sibling::h2[@id="uses"]) = count(preceding-sibling::h2)]').getall()
 
-        if 'Treatments' in treatments_text:
-            treatments_index = treatments_text.index('Treatments')
-            if len(breadcrumb_items) > treatments_index + 1:
-                breadcrumb_use = breadcrumb_items[treatments_index + 1].css('::text').get().strip().lower()
-                if breadcrumb_use:
-                    all_uses.append(breadcrumb_use)
+        uses = []
+        # Extract the text from each paragraph
+        for paragraph_html in paragraphs:
+            paragraph_selector = scrapy.Selector(text=paragraph_html)
+            text = paragraph_selector.xpath('string(.)').get().strip()
+            if text:
+                uses.append(text)
 
-        # Always use the backup method as well
-        backup_uses = self.backup_uses(response)
-        all_uses.extend(backup_uses)
-
-        # Remove duplicates
-        return list(set(all_uses))
-
-
-    def backup_uses(self, response):
-        uses_list = []
-        # Select all sibling elements following the <h2> tag with the id of "uses"
-        target_uses = response.css('h2#uses ~ *')
-
-        for sibling in target_uses:
-            # Check if the element is an <a> tag and process it
-            links = sibling.css('a[href*="condition"]::text').getall()
-            for link_text in links:
-                use = link_text.strip().lower()
-                if use and use not in uses_list:
-                    uses_list.append(use)
-
-        return uses_list
+        return uses
 
     
-    def extract_side_effects(self, response):
-    # Locate the header with the id 'side-effects'
-        side_effects_header = response.xpath('//h2[@id="side-effects"]')
 
-        # Find all ul elements following this header until 'ddc-related-links'
-        # Use the 'following-sibling' axis and stop at the specified class
-        side_effects_lists = side_effects_header.xpath(
-            'following-sibling::ul[preceding-sibling::div[contains(@class, "ddc-related-links")]]'
-        )
 
-        # Extract the side effects from each ul
-        side_effects_data = []
-        for ul in side_effects_lists:
-            effects = ul.xpath('li//text()').getall()
-            # Clean up the effects text and add to the list
-            cleaned_effects = [effect.strip() for effect in effects if effect.strip()]
-            side_effects_data.extend(cleaned_effects)
 
-        return side_effects_data
+
+
+
 
