@@ -23,3 +23,11 @@ class InteractionItem(scrapy.Item):
     major_interactions = scrapy.Field()
     minor_interactions = scrapy.Field()
     moderate_interactions = scrapy.Field()
+    
+class DrugItem(scrapy.Item):
+    drug_name = scrapy.Field()
+    link = scrapy.Field()
+    
+class SideItem(scrapy.Item):
+    generic_name = scrapy.Field()
+    side_effect = scrapy.Field()
